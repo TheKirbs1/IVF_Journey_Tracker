@@ -1,38 +1,42 @@
-export const initialStore=()=>{
-  return{
-    message: null,
-    todos: [
-      {
-        id: 1,
-        title: "Make the bed",
-        background: null,
+// src/store/scriptsSlice.js
+import { createSlice, nanoid } from '@reduxjs/toolkit';
+
+const initialState = {
+  scripts: [], // { id, title, description, body, status }
+};
+
+const scriptsSlice = createSlice({
+  name: 'scripts',
+  initialState,
+  reducers: {
+    addScript: {
+      reducer(state, action) {
+        state.scripts.push(action.payload);
       },
-      {
-        id: 2,
-        title: "Do my homework",
-        background: null,
+      prepare(title = 'Untitled', description = '') {
+        return {
+          payload: {
+            id: nanoid(),
+            title,
+            description,
+            body: '',
+            status: 'draft', // other statuses: "editing", "complete", "published"
+          },
+        };
+      },
+    },
+    updateScript(state, action) {
+      const { id, updates } = action.payload;
+      const index = state.scripts.findIndex(s => s.id === id);
+      if (index !== -1) {
+        state.scripts[index] = { ...state.scripts[index], ...updates };
       }
-    ]
-  }
-}
+    },
+    deleteScript(state, action) {
+      state.scripts = state.scripts.filter(s => s.id !== action.payload);
+    },
+  },
+});
 
-export default function storeReducer(store, action = {}) {
-  switch(action.type){
-    case 'set_hello':
-      return {
-        ...store,
-        message: action.payload
-      };
-      
-    case 'add_task':
-
-      const { id,  color } = action.payload
-
-      return {
-        ...store,
-        todos: store.todos.map((todo) => (todo.id === id ? { ...todo, background: color } : todo))
-      };
-    default:
-      throw Error('Unknown action.');
-  }    
-}
+export const { addScript, updateScript, deleteScript } = scriptsSlice.actions;
+export default scriptsSlice.reducer;
